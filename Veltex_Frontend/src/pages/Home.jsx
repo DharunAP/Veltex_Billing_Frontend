@@ -11,10 +11,12 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [isLoading, setLoading] = useState(false);
 
 
   const fetchBuyers = async () => {
     try {
+      setLoading(true)
       const res = await fetch(`${BACKEND_URL}/buyers/`, {
         method: 'GET',
         headers: {
@@ -26,10 +28,12 @@ const Home = () => {
     } catch (err) {
       console.error("Failed to fetch buyers:", err);
     }
+    setLoading(false)
   };
 
   const fetchBills = async () => {
     try {
+      setLoading(true)
       const res = await fetch(`${BACKEND_URL}/bills/`);
       const data = await res.json();
       setBills(data);
@@ -39,6 +43,7 @@ const Home = () => {
     } catch (err) {
       console.error("Failed to fetch bills:", err);
     }
+    setLoading(false)
   };
 
   useEffect(() => {
@@ -48,6 +53,7 @@ const Home = () => {
 
   const deleteBuyer = async (buyer) => {
     if (!window.confirm(`Are you sure you want to delete Bill #${buyer.name}?`)) return;
+    setLoading(true)
     const response = await fetch(`${BACKEND_URL}/buyers/${buyer.id}`, {
       method: 'DELETE',
       headers: {
@@ -57,12 +63,14 @@ const Home = () => {
     const data = await response.json();
     console.log(data);
     fetchBuyers(); // Refresh after delete
+    setLoading(false)
   };
 
   const handleDeleteBill = async (bill) => {
     if (!window.confirm(`Are you sure you want to delete Bill #${bill.bill_number}?`)) return;
 
     try {
+      setLoading(true)
       const res = await fetch(`${BACKEND_URL}/bills/${bill.id}/`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' }
@@ -78,6 +86,7 @@ const Home = () => {
       console.error("Error deleting bill:", err);
       alert("Error deleting bill.");
     }
+    setLoading(false)
   };
   
 
@@ -109,6 +118,7 @@ const Home = () => {
   });
 
   const generatePDF = async() =>{
+    setLoading(true)
     const response = await fetch(`${BACKEND_URL}/export/?file_name=${startDate}-${endDate}.pdf`,{
       method:'POST',
       headers:{
@@ -122,13 +132,16 @@ const Home = () => {
       window.open(`${BACKEND_URL.replace('/api', '')}/media/Archives/${startDate}-${endDate}.pdf`, '_blank');
     }
     else alert('Failed to save bills.')
+    setLoading(false)
   }
   
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Veltex Billing Dashboard</h1>
-
+      {isLoading &&(
+        <h1 className='fixed bg-black text-white p-1 rounded text-lg top-25 right-[50%]'>Loading...</h1>
+      )}
       {/* 🔍 Search Box */}
       <div className="mb-4 w-[35%]">
         <input

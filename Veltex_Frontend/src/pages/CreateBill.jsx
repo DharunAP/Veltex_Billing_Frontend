@@ -24,9 +24,11 @@ const CreateBill = () => {
   const [gstCGST, setGstCGST] = useState(0);
   const [gstIGST, setGstIGST] = useState(0);
   const [total, setTotal] = useState(0);
+  const [isLoading,setLoading] = useState(false)
 
   // Fetch buyer if buyerId is present
   useEffect(() => {
+    setLoading(true)
     if (isEditMode) {
       fetch(`${BACKEND_URL}/bills/${bill_number}/`)
         .then(res => res.json())
@@ -47,6 +49,7 @@ const CreateBill = () => {
         .then(data => setBuyer(data))
         .catch(err => console.error('Failed to fetch buyer:', err));
     }
+    setLoading(false)
     console.log(items)
   }, [buyerId, bill_number]);
   
@@ -114,7 +117,7 @@ const CreateBill = () => {
       : `${BACKEND_URL}/bills/create/`;
   
     const method = isEditMode ? 'PUT' : 'POST';
-  
+    setLoading(true)
     const res = await fetch(endpoint, {
       method,
       headers: { 'Content-Type': 'application/json' },
@@ -129,11 +132,15 @@ const CreateBill = () => {
     } else {
       alert(`Failed to ${isEditMode ? "update" : "create"} bill.`);
     }
+    setLoading(false)
   };
   
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
+      {isLoading &&(
+        <h1 className='fixed bg-black text-white p-1 rounded text-lg top-25 right-[50%]'>Loading...</h1>
+      )}
       <h1 className="text-2xl font-bold mb-6">
         {isEditMode ? "Edit Bill" : "Create Bill"}
       </h1>
